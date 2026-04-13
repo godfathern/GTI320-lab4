@@ -16,6 +16,10 @@ void ParticleSystem::computeForces()
     // Calcul de la force gravitationnelle sur chacune des particules
     for (Particle& p : m_particles)
     {
+        //Slide 40 cours 10
+        p.f(0) = 0.0f;
+        p.f(1) = p.m * (-9.81f);
+
     }
 
     // TODO
@@ -27,6 +31,24 @@ void ParticleSystem::computeForces()
     // magnitude mais dans des directions opposées.
     for (const Spring& s : m_springs)
     {
+        //Slide 42 cours 10
+        Vector2f distance = m_particles[s.index0].x - m_particles[s.index1].x;
+        float norm = distance.norm();
+
+        if (norm > 0) {
+            Vector2f direction = {distance(0)/norm, distance(1)/norm};
+
+            // Magnitude force de Hooke (slide 41-42)
+            float f = s.k * (norm - s.l0);
+            Vector2f forceRessort = f * direction;
+
+
+            m_particles[s.index0].f(0) -= forceRessort(0);
+            m_particles[s.index0].f(1) -= forceRessort(1);
+
+            m_particles[s.index1].f(0) += forceRessort(0);
+            m_particles[s.index1].f(1) += forceRessort(1);
+        }
     }
 }
 
@@ -45,6 +67,25 @@ void ParticleSystem::pack(Vector<float, Dynamic>& _pos,
     // taille. Rappel : la taille de ces vecteurs doit être 2 fois le nombre de
     // particules.
 
+    int n = m_particles.size();
+
+    if (_pos.size() != 2 * n) _pos.resize(2 * n);
+    if (_vel.size() != 2 * n) _vel.resize(2 * n);
+    if (_force.size() != 2 * n) _force.resize(2 * n);
+
+    for (int i = 0; i < n; ++i)
+    {
+        const Particle& p = m_particles[i];
+
+        _pos(2 * i)     = p.x(0);
+        _vel(2 * i)     = p.v(0);
+        _force(2 * i)   = p.f(0);
+
+        _pos(2 * i + 1)   = p.x(1);
+        _vel(2 * i + 1)   = p.v(1);
+        _force(2 * i + 1) = p.f(1);
+    }
+
 }
 
 /**
@@ -58,6 +99,19 @@ void ParticleSystem::unpack(const Vector<float, Dynamic>& _pos,
     // Mise à jour des propriétés de chacune des particules à partir des valeurs
     // contenues dans le vecteur d'état.
 
+    int n = m_particles.size();
+
+    for (int i = 0; i < n; ++i)
+    {
+        Particle& p = m_particles[i];
+
+        p.x(0) = _pos(2 * i);
+        p.x(1) = _pos(2 * i + 1);
+
+        p.v(0) = _vel(2 * i);
+        p.v(1) = _vel(2 * i + 1);
+    }
+    
 }
 
 
