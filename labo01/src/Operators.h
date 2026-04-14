@@ -209,6 +209,27 @@ namespace gti320 {
         return C;
     }
 
+    /** Nouvelle
+    * Soustraction : Matrice - Matrice
+    */
+    template <typename _Scalar, int Rows, int Cols, int StorageA, int StorageB>
+    Matrix<_Scalar, Rows, Cols> operator-(const Matrix<_Scalar, Rows, Cols, StorageA>& A, const Matrix<_Scalar, Rows, Cols, StorageB>& B)
+    {
+        assert(A.rows() == B.rows());
+        assert(A.cols() == B.cols());
+
+        Matrix<_Scalar, Rows, Cols> C(A.rows(), A.cols());
+        for (int i = 0; i < A.rows(); ++i) {
+            for (int j = 0; j < A.cols(); ++j) {
+                C(i, j) = A(i, j) - B(i, j);
+            }
+        }
+        return C;
+    }
+
+
+
+
     /**
      * Multiplication  : Scalaire * Matrice (colonne) - testé
      *
