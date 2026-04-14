@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <cmath>
+#include <iostream>
 
 namespace Jacobi {
     typedef std::vector<double> Vector;
