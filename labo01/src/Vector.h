@@ -106,5 +106,29 @@ namespace gti320 {
 
             return std::sqrt(resultCaree);
         }
+
+        /** Nouvelle
+         * Opérateur d'addition de vecteurs
+         */
+        inline Vector operator+(const Vector& other) const {
+            assert(this->rows() == other.rows());
+            Vector result(this->rows());
+            for (int i = 0; i < this->rows(); ++i) {
+                result(i) = (*this)(i) + other(i);
+            }
+            return result;
+        }
+
+        /**Nouvelle
+         * Opérateur de soustraction de vecteurs
+         */
+        inline Vector operator-(const Vector& other) const {
+            assert(this->rows() == other.rows());
+            Vector result(this->rows());
+            for (int i = 0; i < this->rows(); ++i) {
+                result(i) = (*this)(i) - other(i);
+            }
+            return result;
+        }
     };
 }
