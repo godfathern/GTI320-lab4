@@ -6,6 +6,13 @@ project(labo_physique)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(APPLE)
+    set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include")
+    set(OpenMP_C_LIB_NAMES "omp")
+    set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include")
+    set(OpenMP_CXX_LIB_NAMES "omp")
+    set(OpenMP_omp_LIBRARY "/opt/homebrew/opt/libomp/lib/libomp.dylib")
+endif()
 find_package(OpenMP REQUIRED)
 
 #--------------------------------------------------
@@ -29,7 +36,7 @@ find_package(OpenGL REQUIRED)
 set(HEADERS ParticleSimGLCanvas.h ParticleSimApplication.h ParticleSystem.h ParticleSystemFactory.h Vector2d.h Solvers.h GraphColoring.h)
 set(SOURCE main.cpp ParticleSimApplication.cpp ParticleSimGLCanvas.cpp ParticleSystem.cpp ParticleSystemFactory.cpp GraphColoring.cpp)
 add_executable(labo_physique ${SOURCE} ${HEADERS})
-target_link_libraries(labo_physique nanogui ${NANOGUI_EXTRA_LIBS} OpenMP::OpenMP_CXX)
+target_link_libraries(labo_physique nanogui ${NANOGUI_EXTRA_LIBS} OpenMP::OpenMP_CXX "-framework OpenGL")
 
 if(MSVC) 
 	set_property(TARGET labo_physique PROPERTY VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/labo_physique)
