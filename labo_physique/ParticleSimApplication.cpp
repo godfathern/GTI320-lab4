@@ -377,8 +377,10 @@ void ParticleSimApplication::step(float dt)
     //         Version 2 utilise un seul constructeur et aucune copie
     //////////////////////////////////////////////////////////////////////////////////
     //
-    const Matrix<float, Dynamic, Dynamic> A;
-    const Vector<float, Dynamic> b;
+
+    //Slide 54 - cours 10
+    const Matrix<float, Dynamic, Dynamic> A = m_M - (dt * dt) * m_dfdx;
+    const Vector<float, Dynamic> b = dt * m_f + m_M * m_v;
 
     // Résolution du système d'équations  `A*v_plus = b`.
     //
@@ -417,6 +419,7 @@ void ParticleSimApplication::step(float dt)
     // implicite. Les nouvelles position sont calculées à partir des position
     // actuelles m_x et des nouvelles vitesses v_plus. Les nouvelles positions
     // sont stockées directement dans le vecteur m_x.
+    m_x = m_x + dt * v_plus;
 
 
     // Affecte les valeurs calculées dans le vecteurs d'états aux particules du
