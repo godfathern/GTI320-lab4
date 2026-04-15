@@ -1,7 +1,7 @@
 /**
  * @file IKSolver.cpp
  *
- * @brief Class du solveur cinématique inverse
+ * @brief Class du solveur cinï¿½matique inverse
  *
  * Nom: Phan Tung Bui
  * Code permanent : BUIP26109708
@@ -61,7 +61,7 @@ namespace
                 uiTdx += U(k, i) * dx(k);
             }
 
-            if (std::abs(sigma(i)) > 0) {
+            if (sigma(i) > 0) {
                 tmp(i) = uiTdx / sigma(i);
             } else {
                 tmp(i) = 0;
