@@ -1,5 +1,8 @@
 #include "ParticleSystem.h"
+
+#include "Math3D.h"
 #include "SubMatrix.h"
+#include "nanogui/vector.h"
 
 using namespace gti320;
 
@@ -36,7 +39,7 @@ void ParticleSystem::computeForces()
         float norm = distance.norm();
 
         if (norm > 0) {
-            Vector2f direction = {distance(0)/norm, distance(1)/norm};
+            Vector2f direction = {distance(0)/norm, distance(1)/norm}; //vecteur unitaire
 
             // Magnitude force de Hooke (slide 41-42)
             float f = s.k * (norm - s.l0);
@@ -130,12 +133,18 @@ void ParticleSystem::buildMassMatrix(Matrix<float, Dynamic, Dynamic>& M)
     //
     // Inscrire la masse de chacune des particules dans la matrice de masses M
     //
+
+    //slide 27 cours 10
     for (int i = 0; i < numParticles; ++i)
     {
+        float mass = m_particles[i].fixed ? 1e6f : m_particles[i].m;
+
+        M(2 * i,2 * i)     = mass;
+        M(2 * i + 1,2 * i + 1) = mass;
     }
 }
 
-
+typedef Matrix <float, 2, 2> Matrix2f;
 /**
  * Construction de la matrice de rigidité.
  */
@@ -152,12 +161,88 @@ void ParticleSystem::buildDfDx(Matrix<float, Dynamic, Dynamic>& dfdx)
     {
         // TODO
         //
-        // Calculer le coefficients alpha et le produit dyadique tel que décrit au cours.
+        // Calculer le coefficients alpha et le produit dyadique (outer product) tel que décrit au cours.
         // Utiliser les indices spring.index0 et spring.index1 pour calculer les coordonnées des endroits affectés.
         //
         // Astuce: créer une matrice de taille fixe 2 par 2 puis utiliser la classe SubMatrix pour accumuler 
         // les modifications sur la diagonale (2 endroits) et pour mettre à jour les blocs non diagonale (2 endroits).
 
+        //Slide 46-47 cousr 10
 
+        Vector2f distance = m_particles[spring.index0].x - m_particles[spring.index1].x;
+        float norm = distance.norm();
+        if (norm > 0) {
+            float r = spring.l0;
+            float k = spring.k;
+            Vector2f u = distance / norm; //vecteur unitaire : direction du ressort
+
+            //Calcul du produit dyadique : slide 52 cours 10
+            Matrix2f dyac = u * u.transpose();
+
+            //Calcul alpha : Slide 44 cours 10
+            float alpha = k * ( 1 - r/norm);
+
+            //Calcul derive partielle
+            Matrix2f dfi_dxj;
+            dfi_dxj(0,0) = alpha + k*r*dyac(0,0)/norm;
+            dfi_dxj(1,1) = alpha + k*r*dyac(1,1)/norm;
+            dfi_dxj(0,1) = k*r*dyac(0,1)/norm;
+            dfi_dxj(1,0) = k*r*dyac(1,0)/norm;
+
+            Matrix2f dfi_dxi;
+            dfi_dxi(0,0) = -alpha - k*r*dyac(0,0)/norm;
+            dfi_dxi(1,1) = -alpha - k*r*dyac(1,1)/norm;
+            dfi_dxi(0,1) = -k*r*dyac(0,1)/norm;
+            dfi_dxi(1,0) = -k*r*dyac(1,0)/norm;
+
+            Matrix4f df_dx_local;
+            df_dx_local(0, 0) = dfi_dxi(0, 0);
+            df_dx_local(0, 1) = dfi_dxi(0, 1);
+            df_dx_local(1, 0) = dfi_dxi(1, 0);
+            df_dx_local(1, 1) = dfi_dxi(1, 1);
+
+            df_dx_local(0, 2) = dfi_dxj(0, 0);
+            df_dx_local(0, 3) = dfi_dxj(0, 1);
+            df_dx_local(1, 2) = dfi_dxj(1, 0);
+            df_dx_local(1, 3) = dfi_dxj(1, 1);
+
+            df_dx_local(2, 0) = dfi_dxj(0, 0);
+            df_dx_local(2, 1) = dfi_dxj(0, 1);
+            df_dx_local(3, 0) = dfi_dxj(1, 0);
+            df_dx_local(3, 1) = dfi_dxj(1, 1);
+
+            df_dx_local(2, 2) = dfi_dxi(0, 0);
+            df_dx_local(2, 3) = dfi_dxi(0, 1);
+            df_dx_local(3, 2) = dfi_dxi(1, 0);
+            df_dx_local(3, 3) = dfi_dxi(1, 1);
+
+            int i = spring.index0;
+            int j = spring.index1;
+
+            // Bloc (i, i) - Diagonale
+            dfdx(2 * i,     2 * i)     += df_dx_local(0, 0);
+            dfdx(2 * i,     2 * i + 1) += df_dx_local(0, 1);
+            dfdx(2 * i + 1, 2 * i)     += df_dx_local(1, 0);
+            dfdx(2 * i + 1, 2 * i + 1) += df_dx_local(1, 1);
+
+            // Bloc (i, j) - Hors-diagonale
+            dfdx(2 * i,     2 * j)     += df_dx_local(0, 2);
+            dfdx(2 * i,     2 * j + 1) += df_dx_local(0, 3);
+            dfdx(2 * i + 1, 2 * j)     += df_dx_local(1, 2);
+            dfdx(2 * i + 1, 2 * j + 1) += df_dx_local(1, 3);
+
+            // Bloc (j, i) - Hors-diagonale
+            dfdx(2 * j,     2 * i)     += df_dx_local(2, 0);
+            dfdx(2 * j,     2 * i + 1) += df_dx_local(2, 1);
+            dfdx(2 * j + 1, 2 * i)     += df_dx_local(3, 0);
+            dfdx(2 * j + 1, 2 * i + 1) += df_dx_local(3, 1);
+
+            // Bloc (j, j) - Diagonale
+            dfdx(2 * j,     2 * j)     += df_dx_local(2, 2);
+            dfdx(2 * j,     2 * j + 1) += df_dx_local(2, 3);
+            dfdx(2 * j + 1, 2 * j)     += df_dx_local(3, 2);
+            dfdx(2 * j + 1, 2 * j + 1) += df_dx_local(3, 3);
+
+        }
     }
 }
