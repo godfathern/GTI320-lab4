@@ -5,9 +5,9 @@
  *
  * @brief Vecteur 2D
  *
- * Nom:
- * Code permanent :
- * Email :
+ * Nom: Phan Tung Bui
+ * Code permanent : BUIP26109708
+ * Email : phan-tung.bui.1@ens.etsmtl.ca
  *
  */
 
@@ -101,7 +101,43 @@ namespace gti320
         {
             return sqrt(dot(*this));
         }
+
+        /** Nouvelle
+         * Opérateur de division par un scalaire
+         */
+        inline Vector operator/(_Scalar s) const
+        {
+            assert(s > 0); // division par zéro
+            return Vector((*this)(0) / s, (*this)(1) / s);
+        }
+
+        /** Nouvelle
+        * Retourne la transposee du vecteur
+        */
+        inline Matrix<_Scalar, 1, 2> transpose() const
+        {
+            Matrix<_Scalar, 1, 2> result;
+            result(0, 0) = (*this)(0);
+            result(0, 1) = (*this)(1);
+            return result;
+        }
     };
+
+    /**
+    * Operateur de multiplication entre un vecteur colonne
+    * et un vecteur ligne pour produire une matrice.
+    */
+
+    template<typename _Scalar>
+    inline Matrix<_Scalar, 2, 2> operator*(const Vector<_Scalar, 2>& u, const Matrix<_Scalar, 1, 2>& v)
+    {
+        Matrix<_Scalar, 2, 2> res;
+        res(0, 0) = u(0) * v(0, 0);
+        res(0, 1) = u(0) * v(0, 1);
+        res(1, 0) = u(1) * v(0, 0);
+        res(1, 1) = u(1) * v(0, 1);
+        return res;
+    }
 
     typedef Vector<float, 2> Vector2f;
     typedef Vector<double, 2> Vector2d;

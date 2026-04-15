@@ -102,7 +102,7 @@ void ParticleSystemFactory::createHangingRope(ParticleSystem& particleSystem, fl
 {
     particleSystem.clear();
 
-    const int N = 20;
+    const int N = 2;
     const int x_start = 200;
     const int dx = 32;
 
@@ -184,6 +184,63 @@ void ParticleSystemFactory::createVotreExemple(ParticleSystem& particleSystem, f
     particleSystem.clear();
 
     // TODO Créez votre propre exemple. Ajoutez du code ici.
-    //
+    //Nouvelle
+    // Slowly changer le stiffness, vous allez voir le humanoid danse :))
+    const float mass = 1.0f;
+    const int x_center = 500;
+    const int y_head = 350;
+
+    // Tete
+    Particle head(Vector2f(x_center, y_head), Vector2f(0,0), Vector2f(0,0), mass);
+    head.fixed = true;
+    particleSystem.addParticle(head); // Index 0
+
+    // Epaule
+    particleSystem.addParticle(Particle(Vector2f(x_center, y_head - 40), Vector2f(0,0), Vector2f(0,0), mass)); // Cou (1)
+    particleSystem.addParticle(Particle(Vector2f(x_center - 60, y_head - 60), Vector2f(0,0), Vector2f(0,0), mass)); // Épaule G (2)
+    particleSystem.addParticle(Particle(Vector2f(x_center + 60, y_head - 60), Vector2f(0,0), Vector2f(0,0), mass)); // Épaule D (3)
+    particleSystem.addParticle(Particle(Vector2f(x_center, y_head - 150), Vector2f(0,0), Vector2f(0,0), mass)); // Bassin (4)
+
+    // Bras g
+    particleSystem.addParticle(Particle(Vector2f(x_center - 100, y_head - 100), Vector2f(0,0), Vector2f(0,0), mass)); // Coude G (5)
+    particleSystem.addParticle(Particle(Vector2f(x_center - 140, y_head - 140), Vector2f(0,0), Vector2f(0,0), mass)); // Main G (6)
+
+    // Bras d
+    particleSystem.addParticle(Particle(Vector2f(x_center + 100, y_head - 100), Vector2f(0,0), Vector2f(0,0), mass)); // Coude D (7)
+    particleSystem.addParticle(Particle(Vector2f(x_center + 140, y_head - 140), Vector2f(0,0), Vector2f(0,0), mass)); // Main D (8)
+
+    // Jambe g
+    particleSystem.addParticle(Particle(Vector2f(x_center - 40, y_head - 220), Vector2f(0,0), Vector2f(0,0), mass)); // Genou G (9)
+    particleSystem.addParticle(Particle(Vector2f(x_center - 40, y_head - 300), Vector2f(0,0), Vector2f(0,0), mass)); // Pied G (10)
+
+    // Jambe d
+    particleSystem.addParticle(Particle(Vector2f(x_center + 40, y_head - 220), Vector2f(0,0), Vector2f(0,0), mass)); // Genou D (11)
+    particleSystem.addParticle(Particle(Vector2f(x_center + 40, y_head - 300), Vector2f(0,0), Vector2f(0,0), mass)); // Pied D (12)
+
+    //Connexions
+    auto addLink = [&](int i, int j) {
+        float dist = (particleSystem.getParticles()[i].x - particleSystem.getParticles()[j].x).norm();
+        particleSystem.addSpring(Spring(i, j, k, dist));
+    };
+
+    //Tete
+    addLink(0, 1);
+    addLink(1, 2);
+    addLink(1, 3);
+    addLink(2, 4);
+    addLink(3, 4);
+    addLink(2, 3);
+    // Bras
+    addLink(2, 5);
+    addLink(5, 6);
+    addLink(3, 7);
+    addLink(7, 8);
+
+    // Jambes
+    addLink(4, 9);
+    addLink(9, 10);
+    addLink(4, 11);
+    addLink(11, 12);
+    addLink(1, 4);
 
 }

@@ -3,11 +3,11 @@
 /**
  * @file ParticleSystemFactory.h
  *
- * @brief Classe utilisée pour créer des systèmes de particules.
+ * @brief Classe utilisï¿½e pour crï¿½er des systï¿½mes de particules.
  *
- * Nom:
- * Code permanent :
- * Email :
+ * Nom: Phan Tung Bui
+ * Code permanent : BUIP26109708
+ * Email : phan-tung.bui.1@ens.etsmtl.ca
  *
  */
 
